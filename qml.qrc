@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Matrix.qml</file>
+        <file>img/icon.png</file>
+    </qresource>
+</RCC>
