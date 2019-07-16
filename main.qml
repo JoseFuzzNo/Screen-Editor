@@ -11,8 +11,8 @@ Window {
     title: qsTr("Screen Editor")
     color: "#CCC"
 
-    property int defaultScreenWidth: 128
-    property int defaultScreenHeight: 64
+    property int defaultScreenWidth: 5
+    property int defaultScreenHeight: 8
 
     property variant matrixData: [[],[]]
 
@@ -36,22 +36,44 @@ Window {
         refresh( )
     }
 
+    function pad(n, width, z) {
+      z = z || '0';
+      n = n + '';
+      return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
+
     function generateCode( ) {
-        var dataStr = "const unsigned char screen[] = {"
-        for ( var y = 0; y < screen.rows; y++ ) {
-            dataStr += "\n\t"
+        if ( characterCheckBox.checked ) {
+            var dataStr = "const unsigned char screen[] = {"
+            for ( var y = 0; y < screen.rows; y++ ) {
+                dataStr += "\n\t"
+                for ( var x = 0; x < screen.columns; x++ ) {
+                    if ( x === 0 )
+                        dataStr += "0b"
+                    else if ( x % 8 === 0 )
+                        dataStr += ", 0b"
+
+                    dataStr += matrixData[x][y]
+                }
+                dataStr += ","
+            }
+            dataStr += "\n};"
+            return dataStr
+        } else {
+            var dataStr = ""
             for ( var x = 0; x < screen.columns; x++ ) {
                 if ( x === 0 )
-                    dataStr += "0b"
-                else if ( x % 8 === 0 )
-                    dataStr += ", 0b"
-
-                dataStr += matrixData[x][y]
+                    dataStr += "0x"
+                else
+                    dataStr += ", 0x"
+                var value = 0
+                for ( var y = 0; y < screen.rows; y++ ) {
+                    value += parseInt( matrixData[x][y] ) << y
+                }
+                dataStr += pad( value.toString(16).toUpperCase( ), 2, 0 )
             }
-            dataStr += ","
+            return dataStr
         }
-        dataStr += "\n};"
-        return dataStr
     }
 
     function openFile( fileName ) {
@@ -112,6 +134,11 @@ Window {
 
             Item {
                 Layout.fillWidth: true
+            }
+
+            CheckBox {
+                id: characterCheckBox
+                text: checked ? "X/Y" : "Char"
             }
 
             Slider {
